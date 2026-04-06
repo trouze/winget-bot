@@ -1,0 +1,32 @@
+name: dbtFusion winget bump
+
+on:
+  schedule:
+    - cron: '0 13 * * *'  # 9 AM ET (UTC-4) daily
+  workflow_dispatch:        # allow manual trigger from Actions UI
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # allows git push of state.json back to this repo
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run bump.py
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: uv run python bump.py
+
+      - name: Commit updated state.json
+        run: |
+          git config user.name "winget-bot"
+          git config user.email "winget-bot@users.noreply.github.com"
+          git add state.json
+          git diff --cached --quiet && echo "No state change." || \
+            git commit -m "chore: bump state to $(jq -r .latest_version state.json)" && git push
