@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Automated winget version bump for dbtLabs.dbtFusion."""
+"""Automated winget version bump for dbtLabs.dbt."""
 
 import base64
 import hashlib
@@ -19,7 +19,7 @@ WINDOWS_ZIP_URL = "https://public.cdn.getdbt.com/fs/cli/fs-v{version}-x86_64-pc-
 FORK_OWNER = "trouze"
 UPSTREAM_REPO = "microsoft/winget-pkgs"
 FORK_REPO = f"{FORK_OWNER}/winget-pkgs"
-MANIFEST_BASE = "manifests/d/dbtLabs/dbtFusion"
+MANIFEST_BASE = "manifests/d/dbtLabs/dbt"
 
 
 def log(msg: str) -> None:
@@ -64,7 +64,7 @@ def build_version_manifest(version: str) -> str:
     return (
         "# yaml-language-server: $schema=https://aka.ms/winget-manifest.version.1.12.0.schema.json\n"
         "\n"
-        f"PackageIdentifier: dbtLabs.dbtFusion\n"
+        f"PackageIdentifier: dbtLabs.dbt\n"
         f"PackageVersion: {version}\n"
         "DefaultLocale: en-US\n"
         "ManifestType: version\n"
@@ -77,7 +77,7 @@ def build_installer_manifest(version: str, sha256: str, release_date: str) -> st
     return (
         "# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.12.0.schema.json\n"
         "\n"
-        f"PackageIdentifier: dbtLabs.dbtFusion\n"
+        f"PackageIdentifier: dbtLabs.dbt\n"
         f"PackageVersion: {version}\n"
         "InstallerLocale: en-US\n"
         "InstallerType: zip\n"
@@ -101,7 +101,7 @@ def build_locale_manifest(version: str, year: str) -> str:
     return (
         "# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.12.0.schema.json\n"
         "\n"
-        f"PackageIdentifier: dbtLabs.dbtFusion\n"
+        f"PackageIdentifier: dbtLabs.dbt\n"
         f"PackageVersion: {version}\n"
         "PackageLocale: en-US\n"
         "Publisher: dbt Labs, Inc.\n"
@@ -135,13 +135,13 @@ def build_locale_manifest(version: str, year: str) -> str:
 def create_issue(version: str, old_version: str) -> tuple[str, str]:
     """Returns (issue_url, issue_number)."""
     body = (
-        f"Automated version bump for `dbtLabs.dbtFusion` {old_version} → {version}.\n\n"
+        f"Automated version bump for `dbtLabs.dbt` {old_version} → {version}.\n\n"
         "This issue was opened automatically by winget-bot."
     )
     url = gh(
         "issue", "create",
         "--repo", UPSTREAM_REPO,
-        "--title", f"[New Version] dbtLabs.dbtFusion version {version}",
+        "--title", f"[New Version] dbtLabs.dbt version {version}",
         "--body", body,
     )
     issue_number = url.rstrip("/").split("/")[-1]
@@ -153,7 +153,7 @@ def get_fork_head_sha() -> str:
 
 
 def create_branch(version: str, head_sha: str) -> str:
-    branch = f"dbtLabs.dbtFusion-{version}"
+    branch = f"dbtLabs.dbt-{version}"
     gh(
         "api", f"repos/{FORK_REPO}/git/refs",
         "--method", "POST",
@@ -168,7 +168,7 @@ def push_file(branch: str, manifest_path: str, filename: str, content: str, vers
     gh(
         "api", f"repos/{FORK_REPO}/contents/{manifest_path}/{filename}",
         "--method", "PUT",
-        "--field", f"message=Add dbtLabs.dbtFusion {version}",
+        "--field", f"message=Add dbtLabs.dbt {version}",
         "--field", f"content={encoded}",
         "--field", f"branch={branch}",
     )
@@ -176,7 +176,7 @@ def push_file(branch: str, manifest_path: str, filename: str, content: str, vers
 
 def create_pr(version: str, branch: str, issue_number: str) -> str:
     body = (
-        f"## New version: dbtLabs.dbtFusion {version}\n\n"
+        f"## New version: dbtLabs.dbt {version}\n\n"
         "Automated PR opened by winget-bot.\n\n"
         f"Closes #{issue_number}\n\n"
         "### Manifest changes\n"
@@ -189,13 +189,13 @@ def create_pr(version: str, branch: str, issue_number: str) -> str:
         "--repo", UPSTREAM_REPO,
         "--head", f"{FORK_OWNER}:{branch}",
         "--base", "master",
-        "--title", f"New version: dbtLabs.dbtFusion version {version}",
+        "--title", f"New version: dbtLabs.dbt version {version}",
         "--body", body,
     )
 
 
 def main() -> None:
-    log("Checking for new dbtLabs.dbtFusion release...")
+    log("Checking for new dbtLabs.dbt release...")
 
     state = load_state()
     old_version = state.get("latest_version", "")
@@ -224,9 +224,9 @@ def main() -> None:
     # Step 4: build manifests
     manifest_path = f"{MANIFEST_BASE}/{new_version}"
     manifests = {
-        "dbtLabs.dbtFusion.yaml": build_version_manifest(new_version),
-        "dbtLabs.dbtFusion.installer.yaml": build_installer_manifest(new_version, sha256, release_date),
-        "dbtLabs.dbtFusion.locale.en-US.yaml": build_locale_manifest(new_version, year),
+        "dbtLabs.dbt.yaml": build_version_manifest(new_version),
+        "dbtLabs.dbt.installer.yaml": build_installer_manifest(new_version, sha256, release_date),
+        "dbtLabs.dbt.locale.en-US.yaml": build_locale_manifest(new_version, year),
     }
 
     # Step 5: create tracking issue
